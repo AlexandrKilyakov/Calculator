@@ -1,0 +1,3 @@
+const selectors = {
+  name: "value",
+};

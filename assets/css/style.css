@@ -1,0 +1,78 @@
+:root {
+  --base: #fbc936;
+  --panel: #2a2a2a;
+  --grey: #626262;
+  --bg: #212121;
+  --shadow: #0000002b;
+  --txt: #fff;
+}
+
+body {
+  font-family: "Teko", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--txt);
+  overflow-x: hidden;
+  user-select: none;
+}
+
+.calculator {
+  width: 360px;
+  border-radius: 20px;
+  box-shadow: 0 0 10px var(--shadow);
+  overflow: hidden;
+}
+
+.header {
+  flex-direction: column;
+  display: flex;
+  justify-content: end;
+  text-align: right;
+  min-height: 112px;
+  background-color: var(--bg);
+  padding: 24px;
+}
+
+.header p {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.input {
+  font-size: 64px;
+}
+
+.output {
+  font-size: 32px;
+  color: var(--grey);
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background-color: var(--panel);
+}
+button {
+  font-size: 32px;
+  text-align: center;
+  background-color: inherit;
+  color: var(--txt);
+  border: none;
+  padding: 16px 24px;
+  cursor: pointer;
+  transition: 0.1s background-color, 0.1s color;
+}
+
+.buttons button:hover {
+  background-color: var(--base);
+  color: var(--txt);
+}
+
+[data-role="specially"] {
+  color: var(--base);
+}
