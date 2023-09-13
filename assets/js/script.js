@@ -26,54 +26,22 @@ buttons.addEventListener("click", ({ target }) => {
 
   if (!btn) return;
 
-  const len = getSizeEquation();
+  const len = elementsArray.length - 1;
   const currentElement = elementsArray[len];
   const currentAction = actions[currentElement];
   const newElement = btn.dataset.value;
   const newAction = actions[newElement];
 
   if (btn.dataset.role == "specially") {
-    if (newElement == "dot") {
-      if (!currentElement) {
-        elementsArray.push(`0${actions.dot}`);
-      } else if (currentElement.indexOf(actions.dot) == -1) {
-        if (!isNaN(currentElement)) {
-          elementsArray[len] += actions.dot;
-        } else {
-          elementsArray.push(`0${actions.dot}`);
-        }
-      }
-    } else if (currentElement != newElement && newAction && !currentAction) {
-      elementsArray.push(newElement);
-    } else if (!special.includes(newElement)) {
-      elementsArray[len] = newElement;
-    } else {
-      switch (newElement) {
-        case "minus":
-          if (currentElement != newElement) {
-            elementsArray.push(newElement);
-          }
-          break;
-        case "clear":
-          elementsArray = [];
-          break;
-        case "backspace":
-          if (currentElement.length == 1 || currentAction) {
-            elementsArray.pop();
-          } else {
-            elementsArray[len] = currentElement.slice(0, -1);
-          }
-          break;
-      }
-    }
+    respondSpecialButtons(
+      len,
+      currentElement,
+      currentAction,
+      newElement,
+      newAction
+    );
   } else if (btn.dataset.role == "number") {
-    if (!isNaN(currentElement)) {
-      elementsArray[len] += newElement;
-
-      // calculator(elementsArray);
-    } else {
-      elementsArray.push(newElement);
-    }
+    respondButtons(len, currentElement, newElement);
   }
 
   console.table(elementsArray);
@@ -90,10 +58,51 @@ function calculator(data) {
   }
 }
 
-function getSizeEquation() {
-  return elementsArray.length - 1;
+// Функция для отработки логики особых кнопок
+function respondSpecialButtons(
+  len,
+  currentElement,
+  currentAction,
+  newElement,
+  newAction
+) {
+  if (newElement == "dot") {
+    if (!currentElement) {
+      elementsArray.push(`0${actions.dot}`);
+    } else if (currentElement.indexOf(actions.dot) == -1) {
+      if (!isNaN(currentElement)) {
+        elementsArray[len] += actions.dot;
+      } else {
+        elementsArray.push(`0${actions.dot}`);
+      }
+    }
+  } else if (currentElement != newElement && newAction && !currentAction) {
+    elementsArray.push(newElement);
+  } else if (!special.includes(newElement)) {
+    elementsArray[len] = newElement;
+  } else {
+    switch (newElement) {
+      case "clear":
+        elementsArray = [];
+        break;
+      case "backspace":
+        if (currentElement.length == 1 || currentAction) {
+          elementsArray.pop();
+        } else {
+          elementsArray[len] = currentElement.slice(0, -1);
+        }
+        break;
+    }
+  }
 }
 
-// Создать массив уравнения
-// В массиве не должно идти подряд значения одинаковые по роли, кроме минуса, так как он и отнимает и задает число ниже 0
-// Числа должны записываться в 1 ячейку, если не используется спец символ кроме точки, точка должна стать частью числа
+// Функция для отработки логики нажатия на обычные кнопки (цифры)
+function respondButtons(len, currentElement, newElement) {
+  if (!isNaN(currentElement)) {
+    elementsArray[len] += newElement;
+
+    // calculator(elementsArray);
+  } else {
+    elementsArray.push(newElement);
+  }
+}
