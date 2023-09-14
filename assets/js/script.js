@@ -217,12 +217,12 @@ function calculator(data) {
 
   if (data.length > 2) {
     while ((item = setProcedure(data)[0])) {
-      if (data[item.id + 1]) {
-        data[item.id - 1] = equations[item.value](
-          data[item.id - 1],
-          data[item.id + 1]
-        );
-        data[item.id + 1] = "";
+      const prev = item.id - 1;
+      const next = item.id + 1;
+
+      if (data[next]) {
+        data[prev] = equations[item.value](data[prev], data[next]);
+        data[next] = "";
       }
 
       data[item.id] = "";
