@@ -8,8 +8,9 @@ const input = document.querySelector(selectors.input);
 const output = document.querySelector(selectors.output);
 const buttons = document.querySelector(selectors.buttons);
 
-let elementsArray = [];
+let elementsArray = []; // В этом массиве будут храниться элементы уравнения
 
+// Объект, который содержит математические символы
 const actions = {
   multiply: "*",
   divide: "/",
@@ -19,6 +20,16 @@ const actions = {
   dot: ".",
 };
 
+// Объект, который содержит приоритет математических функций
+const priority = {
+  multiply: 1,
+  divide: 1,
+  interest: 1,
+  plus: 2,
+  minus: 2,
+};
+
+// Объект с математическими функциями
 const equations = {
   multiply: (a, b) => {
     return Number(a) * Number(b);
@@ -37,22 +48,15 @@ const equations = {
   },
 };
 
-const priority = {
-  multiply: 1,
-  divide: 1,
-  interest: 1,
-  plus: 2,
-  minus: 2,
-};
-
-const special = ["equals", "dot", "clear", "backspace"];
-const createNegation = ["multiply", "divide"];
+const special = ["equals", "dot", "clear", "backspace"]; // Данные кнопки имеют особое действие
+const createNegation = ["multiply", "divide"]; // После этих знаков может идти минус
 
 buttons.addEventListener("click", ({ target }) => {
   const btn = target.closest("[data-value]");
 
   if (!btn) return;
 
+  // Кеширую часто используемые хначения
   const len = elementsArray.length - 1;
   const currentRole = btn.dataset.role;
   const currentElement = elementsArray[len];
@@ -60,12 +64,14 @@ buttons.addEventListener("click", ({ target }) => {
   const newElement = btn.dataset.value;
   const newAction = actions[newElement];
 
+  // Выводим результат, если нажата кнопка равенства
   if (newElement == "equals") {
     elementsArray = [output.textContent];
     setValues(output.textContent);
     return;
   }
 
+  // Вызываем функцию в зависимости от роли нажатой кнопки
   if (currentRole == "specially") {
     respondSpecialButtons(
       len,
@@ -96,6 +102,7 @@ function respondSpecialButtons(
   newElement,
   newAction
 ) {
+  // Если нажата точка
   if (newElement == "dot") {
     if (!currentElement) {
       elementsArray.push(`0${actions.dot}`);
@@ -120,6 +127,7 @@ function respondSpecialButtons(
     return;
   }
 
+  // Тут получаем первичный знак
   if (
     currentElement != newElement &&
     newAction &&
@@ -138,6 +146,8 @@ function respondSpecialButtons(
     return;
   }
 
+  // Если нажата кнопка, которая не находится в списке особых
+  // Таким образом можно менять математические функции, а не спамить ими
   if (!special.includes(newElement)) {
     if (
       createNegation.includes(elementsArray[len]) &&
@@ -167,6 +177,7 @@ function respondSpecialButtons(
     return;
   }
 
+  // Обработка некоторых особых кнопок
   switch (newElement) {
     case "clear":
       elementsArray = [];
@@ -199,6 +210,7 @@ function respondButtons(len, currentElement, newElement) {
   callСalculator();
 }
 
+// Функция, которая возвращает математическое действие согласно приоритету
 function setProcedure(data) {
   const procedure = [];
   const max = data.length;
@@ -222,35 +234,42 @@ function setProcedure(data) {
   return procedure[0];
 }
 
+// Функция, которая позволит увидеть вводимые цифры, если длина числа больше поля
 function setScrollEnd(item) {
   if (item.scrollWidth > item.offsetWidth) {
     item.scrollLeft = item.scrollWidth - item.offsetWidth;
   }
 }
 
+// Устанавливаем значения для полей
 function setValues(equation = "", result = "") {
   input.textContent = equation;
   output.textContent = result;
 }
 
+// Проверка на знак минуса, или другими словами - проверка на отрицательное число
 function thisMinus(item) {
   return item == actions.minus;
 }
 
+// Проверка на математическое действие, конкретно - проверка на минус
 function thisMinusType(item) {
   return item == "minus";
 }
 
+// Проверка на положительное или отрицательное число
 function thisNumber(itemA, itemB = itemA) {
   return !isNaN(itemA) || thisMinus(itemB);
 }
 
+// Вызываем калькулятор
 function callСalculator() {
   if (elementsArray.length > 2 || output.textContent.length > 0) {
     calculator(elementsArray.slice());
   }
 }
 
+// А вот и сам калькулятор
 function calculator(data) {
   let item;
 
