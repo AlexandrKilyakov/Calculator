@@ -21,19 +21,19 @@ const actions = {
 
 const equations = {
   multiply: (a, b) => {
-    return ~~a * ~~b;
+    return Number(a) * Number(b);
   },
   divide: (a, b) => {
-    return ~~a / ~~b;
+    return Number(a) / Number(b);
   },
   interest: (a, b) => {
-    return ~~a * (~~b / 100);
+    return Number(a) * (Number(b) / 100);
   },
   plus: (a, b) => {
-    return ~~a + ~~b;
+    return Number(a) + Number(b);
   },
   minus: (a, b) => {
-    return ~~a - ~~b;
+    return Number(a) - Number(b);
   },
 };
 
@@ -106,7 +106,7 @@ function respondSpecialButtons(
     } else {
       elementsArray.push(newElement);
     }
-  } else if (!special.includes()) {
+  } else if (!special.includes(newElement)) {
     if (createNegation.includes(elementsArray[len]) && newElement == "minus") {
       elementsArray.push(actions.minus);
     } else if (!(elementsArray[len] == actions.minus && len == 0)) {
@@ -138,6 +138,8 @@ function respondSpecialButtons(
         output.textContent = "";
         break;
     }
+
+    callСalculator();
   }
 }
 
@@ -149,9 +151,7 @@ function respondButtons(len, currentElement, newElement) {
     elementsArray.push(newElement);
   }
 
-  if (elementsArray.length > 2) {
-    calculator(elementsArray.slice());
-  }
+  callСalculator();
 }
 
 function setProcedure(data) {
@@ -182,6 +182,12 @@ function setProcedure(data) {
   });
 
   return procedure;
+}
+
+function callСalculator() {
+  if (elementsArray.length > 2) {
+    calculator(elementsArray.slice());
+  }
 }
 
 function calculator(data) {
