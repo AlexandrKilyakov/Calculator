@@ -37,6 +37,14 @@ const equations = {
   },
 };
 
+const priority = {
+  multiply: 1,
+  divide: 1,
+  interest: 1,
+  plus: 2,
+  minus: 2,
+};
+
 const special = ["equals", "dot", "clear", "backspace"];
 const createNegation = ["multiply", "divide"];
 
@@ -73,22 +81,12 @@ buttons.addEventListener("click", ({ target }) => {
   input.textContent = "";
 
   for (let item of elementsArray) {
-    if (!isNaN(item) || item == actions.minus) {
-      input.textContent += item;
-    } else {
-      input.textContent += actions[item];
-    }
+    input.textContent += thisNumber(item) ? item : actions[item];
   }
 
   setScrollEnd(input);
   setScrollEnd(output);
 });
-
-function setScrollEnd(item) {
-  if (item.scrollWidth > item.offsetWidth) {
-    item.scrollLeft = item.scrollWidth - item.offsetWidth;
-  }
-}
 
 // Функция для отработки логики особых кнопок
 function respondSpecialButtons(
@@ -101,73 +99,98 @@ function respondSpecialButtons(
   if (newElement == "dot") {
     if (!currentElement) {
       elementsArray.push(`0${actions.dot}`);
-    } else if (currentElement.indexOf(actions.dot) == -1) {
+      return;
+    }
+
+    if (currentElement.indexOf(actions.dot) == -1) {
       if (!isNaN(currentElement)) {
         elementsArray[len] += actions.dot;
-      } else if (elementsArray[len] == actions.minus) {
-        elementsArray[len] += `0${actions.dot}`;
-      } else {
-        elementsArray.push(`0${actions.dot}`);
+        return;
       }
+
+      if (thisMinus(elementsArray[len])) {
+        elementsArray[len] += `0${actions.dot}`;
+        return;
+      }
+
+      elementsArray.push(`0${actions.dot}`);
+      return;
     }
-  } else if (
+
+    return;
+  }
+
+  if (
     currentElement != newElement &&
     newAction &&
     !currentAction &&
     elementsArray[len] != actions.minus
   ) {
     if (!currentElement) {
-      if (newElement == "minus") {
+      if (thisMinusType(newElement)) {
         elementsArray.push(actions.minus);
       }
-    } else {
-      elementsArray.push(newElement);
+
+      return;
     }
-  } else if (!special.includes(newElement)) {
-    if (createNegation.includes(elementsArray[len]) && newElement == "minus") {
+
+    elementsArray.push(newElement);
+    return;
+  }
+
+  if (!special.includes(newElement)) {
+    if (
+      createNegation.includes(elementsArray[len]) &&
+      thisMinusType(newElement)
+    ) {
       elementsArray.push(actions.minus);
-    } else if (!(elementsArray[len] == actions.minus && len == 0)) {
+
+      return;
+    }
+
+    if (!(thisMinus(elementsArray[len]) && len == 0)) {
       let k = len;
 
       while (
         actions.hasOwnProperty(elementsArray[k]) ||
-        elementsArray[k] == actions.minus
+        thisMinus(elementsArray[k])
       ) {
-        k--;
         elementsArray.pop();
+        k--;
       }
+
       elementsArray.push(newElement);
-    }
-  } else {
-    switch (newElement) {
-      case "clear":
-        elementsArray = [];
-        setValues();
-        break;
-      case "backspace":
-        if (!currentElement) {
-          break;
-        }
 
-        if (currentAction || currentElement.length == 1) {
-          elementsArray.pop();
-        } else {
-          elementsArray[len] = currentElement.slice(0, -1);
-        }
-        callСalculator();
-        break;
+      return;
     }
+
+    return;
   }
-}
 
-function setValues(equation = "", result = "") {
-  input.textContent = equation;
-  output.textContent = result;
+  switch (newElement) {
+    case "clear":
+      elementsArray = [];
+      setValues();
+      return;
+    case "backspace":
+      if (!currentElement) {
+        return;
+      }
+
+      if (currentAction || currentElement.length == 1) {
+        elementsArray.pop();
+      } else {
+        elementsArray[len] = currentElement.slice(0, -1);
+      }
+
+      callСalculator();
+      return;
+  }
 }
 
 // Функция для отработки логики нажатия на обычные кнопки (цифры)
 function respondButtons(len, currentElement, newElement) {
-  if (!isNaN(currentElement) || elementsArray[len] == actions.minus) {
+  if (thisNumber(currentElement, elementsArray[len])) {
     elementsArray[len] += newElement;
   } else {
     elementsArray.push(newElement);
@@ -178,22 +201,15 @@ function respondButtons(len, currentElement, newElement) {
 
 function setProcedure(data) {
   const procedure = [];
+  const max = data.length;
 
-  for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < max; i++) {
     if (isNaN(data[i])) {
       procedure.push({ id: i, value: data[i] });
     }
   }
 
   procedure.sort((a, b) => {
-    const priority = {
-      multiply: 1,
-      divide: 1,
-      interest: 1,
-      plus: 2,
-      minus: 2,
-    };
-
     if (priority[a.value] < priority[b.value]) {
       return -1;
     } else if (priority[a.value] > priority[b.value]) {
@@ -203,7 +219,30 @@ function setProcedure(data) {
     }
   });
 
-  return procedure;
+  return procedure[0];
+}
+
+function setScrollEnd(item) {
+  if (item.scrollWidth > item.offsetWidth) {
+    item.scrollLeft = item.scrollWidth - item.offsetWidth;
+  }
+}
+
+function setValues(equation = "", result = "") {
+  input.textContent = equation;
+  output.textContent = result;
+}
+
+function thisMinus(item) {
+  return item == actions.minus;
+}
+
+function thisMinusType(item) {
+  return item == "minus";
+}
+
+function thisNumber(itemA, itemB = itemA) {
+  return !isNaN(itemA) || thisMinus(itemB);
 }
 
 function callСalculator() {
@@ -216,7 +255,7 @@ function calculator(data) {
   let item;
 
   if (data.length > 2) {
-    while ((item = setProcedure(data)[0])) {
+    while ((item = setProcedure(data))) {
       const prev = item.id - 1;
       const next = item.id + 1;
 
@@ -230,7 +269,7 @@ function calculator(data) {
       data = data.filter((element) => element !== "");
     }
 
-    output.textContent = data[0];
+    output.textContent = Math.round(data[0] * 1000) / 1000;
   } else {
     output.textContent = "";
   }
