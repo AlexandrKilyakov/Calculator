@@ -9,7 +9,6 @@ const output = document.querySelector(selectors.output);
 const buttons = document.querySelector(selectors.buttons);
 
 let elementsArray = [];
-let procedure = [];
 
 const actions = {
   multiply: "*",
@@ -106,7 +105,6 @@ function respondSpecialButtons(
       }
     } else {
       elementsArray.push(newElement);
-      setProcedure(newElement);
     }
   } else if (!special.includes()) {
     if (createNegation.includes(elementsArray[len]) && newElement == "minus") {
@@ -122,7 +120,6 @@ function respondSpecialButtons(
         elementsArray.pop();
       }
       elementsArray.push(newElement);
-      setProcedure(newElement);
     }
   } else {
     switch (newElement) {
@@ -153,16 +150,19 @@ function respondButtons(len, currentElement, newElement) {
   }
 
   if (elementsArray.length > 2) {
-    calculator(elementsArray);
+    calculator(elementsArray.slice());
   }
 }
 
-function setProcedure(value) {
-  const id = elementsArray.length - 1;
-  procedure.push({ id, value });
-}
+function setProcedure(data) {
+  const procedure = [];
 
-function calculator(data) {
+  for (let i = 0; i < data.length; i++) {
+    if (isNaN(data[i])) {
+      procedure.push({ id: i, value: data[i] });
+    }
+  }
+
   procedure.sort((a, b) => {
     const priority = {
       multiply: 1,
@@ -181,14 +181,22 @@ function calculator(data) {
     }
   });
 
-  let result = 0;
+  return procedure;
+}
 
-  for (let item of procedure) {
-    result = equations[item.value](
-      elementsArray[item.id - 1],
-      elementsArray[item.id + 1]
+function calculator(data) {
+  let item;
+
+  while ((item = setProcedure(data)[0])) {
+    data[item.id - 1] = equations[item.value](
+      data[item.id - 1],
+      data[item.id + 1]
     );
+    data[item.id] = "";
+    data[item.id + 1] = "";
 
-    console.log(result);
+    data = data.filter((element) => element !== "");
   }
+
+  output.textContent = data[0];
 }
