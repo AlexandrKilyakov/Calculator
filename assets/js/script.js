@@ -46,18 +46,19 @@ buttons.addEventListener("click", ({ target }) => {
   if (!btn) return;
 
   const len = elementsArray.length - 1;
+  const currentRole = btn.dataset.role;
   const currentElement = elementsArray[len];
   const currentAction = actions[currentElement];
   const newElement = btn.dataset.value;
   const newAction = actions[newElement];
 
-  if (btn.dataset.value == "equals") {
+  if (newElement == "equals") {
     elementsArray = [output.textContent];
     setValues(output.textContent);
     return;
   }
 
-  if (btn.dataset.role == "specially") {
+  if (currentRole == "specially") {
     respondSpecialButtons(
       len,
       currentElement,
@@ -65,7 +66,7 @@ buttons.addEventListener("click", ({ target }) => {
       newElement,
       newAction
     );
-  } else if (btn.dataset.role == "number") {
+  } else if (currentRole == "number") {
     respondButtons(len, currentElement, newElement);
   }
 
@@ -78,6 +79,7 @@ buttons.addEventListener("click", ({ target }) => {
       input.textContent += actions[item];
     }
   }
+
   setScrollEnd(input);
   setScrollEnd(output);
 });
