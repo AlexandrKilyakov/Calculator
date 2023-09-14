@@ -51,6 +51,12 @@ buttons.addEventListener("click", ({ target }) => {
   const newElement = btn.dataset.value;
   const newAction = actions[newElement];
 
+  if (btn.dataset.value == "equals") {
+    elementsArray = [output.textContent];
+    setValues(output.textContent);
+    return;
+  }
+
   if (btn.dataset.role == "specially") {
     respondSpecialButtons(
       len,
@@ -64,6 +70,7 @@ buttons.addEventListener("click", ({ target }) => {
   }
 
   input.textContent = "";
+
   for (let item of elementsArray) {
     if (!isNaN(item) || item == actions.minus) {
       input.textContent += item;
@@ -71,7 +78,15 @@ buttons.addEventListener("click", ({ target }) => {
       input.textContent += actions[item];
     }
   }
+  setScrollEnd(input);
+  setScrollEnd(output);
 });
+
+function setScrollEnd(item) {
+  if (item.scrollWidth > item.offsetWidth) {
+    item.scrollLeft = item.scrollWidth - item.offsetWidth;
+  }
+}
 
 // Функция для отработки логики особых кнопок
 function respondSpecialButtons(
@@ -125,22 +140,27 @@ function respondSpecialButtons(
     switch (newElement) {
       case "clear":
         elementsArray = [];
+        setValues();
         break;
       case "backspace":
-        if (currentElement.length == 1 || currentAction) {
+        if (!currentElement) {
+          break;
+        }
+
+        if (currentAction || currentElement.length == 1) {
           elementsArray.pop();
         } else {
           elementsArray[len] = currentElement.slice(0, -1);
         }
-        break;
-      case "equals":
-        input.textContent = output.textContent;
-        output.textContent = "";
+        callСalculator();
         break;
     }
-
-    callСalculator();
   }
+}
+
+function setValues(equation = "", result = "") {
+  input.textContent = equation;
+  output.textContent = result;
 }
 
 // Функция для отработки логики нажатия на обычные кнопки (цифры)
@@ -185,7 +205,7 @@ function setProcedure(data) {
 }
 
 function callСalculator() {
-  if (elementsArray.length > 2) {
+  if (elementsArray.length > 2 || output.textContent.length > 0) {
     calculator(elementsArray.slice());
   }
 }
@@ -193,16 +213,23 @@ function callСalculator() {
 function calculator(data) {
   let item;
 
-  while ((item = setProcedure(data)[0])) {
-    data[item.id - 1] = equations[item.value](
-      data[item.id - 1],
-      data[item.id + 1]
-    );
-    data[item.id] = "";
-    data[item.id + 1] = "";
+  if (data.length > 2) {
+    while ((item = setProcedure(data)[0])) {
+      if (data[item.id + 1]) {
+        data[item.id - 1] = equations[item.value](
+          data[item.id - 1],
+          data[item.id + 1]
+        );
+        data[item.id + 1] = "";
+      }
 
-    data = data.filter((element) => element !== "");
+      data[item.id] = "";
+
+      data = data.filter((element) => element !== "");
+    }
+
+    output.textContent = data[0];
+  } else {
+    output.textContent = "";
   }
-
-  output.textContent = data[0];
 }
